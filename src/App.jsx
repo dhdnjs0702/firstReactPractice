@@ -1,6 +1,8 @@
-import React, { useState } from 'react'
+import React, { useState, useRef } from 'react'
 import './App.css'
-
+import '../components/button.jsx'
+import Button from '../components/button.jsx';
+import Modal from '../components/Modal.jsx'
 
 export const App = () => {
 
@@ -9,66 +11,56 @@ export const App = () => {
   const [silverMedal, setSiverMedal] = useState(0);
   const [cuMedal, setCuMedal] = useState(0);
   const [nationList, setNationList] = useState([]);
-  //////////////////////////////////////////
-  const addNationHandler = () => {
-    const newNation = {
-      id: new Date().getTime(),
-      nation: nation,
-      geum: goldMedal,
-      eun: silverMedal,
-      dong: cuMedal,
+  const [addComment, setAddComment] = useState("국가 추가");
+  const [updateComment, setUpdateComment] = useState("업데이트");
+  const [modal, setModal] = useState(false);
+  
+  if(goldMedal < 0){
+    setGoldMedal(0);
+  }else if(silverMedal < 0){
+    setSiverMedal(0);
+  }else if(cuMedal < 0){
+    setCuMedal(0);
+  }
+  
+  const modalRef = useRef(null);
+  
+  React.useEffect(() => {
+    if (modal) {
+      if (modalRef.current) {
+        modalRef.current.classList.add('active-modal');
+      }
+    } else {
+      if (modalRef.current) {
+        modalRef.current.classList.remove('active-modal');
+      }
     }
-    console.log(newNation);
-    if (newNation.nation === "") {
-      alert("nation's name is null");
-      return;
-    }
+  }, [modal]);
 
-    const isIncluded = () => {
-      return nationList.some((e) => {
-        return e.nation === newNation.nation;
-      })
-    };
-
-    if (isIncluded() === true) {
-      alert("nation's name already included");
-      return;
-    }
-    setNationList([...nationList, newNation]);
-    setNation("");
+  const toggleModal = () => {
+    setModal(!modal);
   };
 
-  const totalMedal = (e) => {
-    let res = e.geum + e.eun + e.dong;
-    return res;
-  }
+  const newNation = {
+    id: new Date().getTime(),
+    nation: nation,
+    geum: goldMedal,
+    eun: silverMedal,
+    dong: cuMedal,
+  };
 
-  const deleteBtn = (selctedNation) => {
-    const filteredNation = nationList.filter((nation) => {
-      return selctedNation !== nation;
-    });
-    setNationList(filteredNation);
-  }
-  //////////////////////////////////////
+  const isIncluded = nationList.some((e) => {
+    return e.nation === newNation.nation;
+  });
+  /////////////////////////////////////////
+  
+  //업데이트 버튼 눌렀을때
   const updateNationHandler = () => {
-    const newNation = {
-      id: new Date().getTime(),
-      nation: nation,
-      geum: goldMedal,
-      eun: silverMedal,
-      dong: cuMedal,
-    }
-    console.log(newNation);
     if (newNation.nation === "") {
-      alert("nation's name is null");
+      toggleModal();
       return;
     }
-
-
-    const isIncluded = nationList.some((e) => {
-      return e.nation === newNation.nation;
-    });
-
+    
     if (isIncluded) {
       //todo: 업데이트 버튼 클릭시 값을 업데이트 
       const res = nationList.map((selectedNation) => {
@@ -80,11 +72,55 @@ export const App = () => {
       });
       setNationList(res);
     } else {
-      alert(`there's no nation name like ${newNation.nation}
-        && isIncluded = ${isIncluded()}`);
+      console.log(modal);
+      toggleModal();
+      setNation("");
+      setCuMedal(0);
+      setGoldMedal(0);
+      setSiverMedal(0);
     }
   };
-  /////////////////////////////////////
+  //////////////////////////////////////////
+  const addNationHandler = () => {
+
+    if (newNation.nation === "") {
+      toggleModal();
+      return;
+    }
+
+    if (isIncluded === true) {
+      toggleModal();
+      return;
+    }
+
+    if(isNaN(newNation.nation)){
+
+    }else{
+      toggleModal();
+      setNation("");
+      return;
+    }
+      
+    setNationList([...nationList, newNation]);
+    setNation("");
+    setCuMedal(0);
+    setGoldMedal(0);
+    setSiverMedal(0);
+  };
+  /////////////////////////////////////////////
+  const totalMedal = (e) => {
+    let res = e.geum + e.eun + e.dong;
+    return res;
+  }
+  ////////////////////////////////////////////
+  const deleteBtn = (selctedNation) => {
+    const filteredNation = nationList.filter((nation) => {
+      return selctedNation !== nation;
+    });
+    setNationList(filteredNation);
+  }
+  //////////////////////////////////////
+
   return (
     <div className='tableContainer'>
       <div className='first'>
@@ -102,7 +138,7 @@ export const App = () => {
                 setNation(event.target.value);
               }}></input></td>
               <td><input type='number' value={goldMedal} onChange={(event) => {
-                setGoldMedal(Number(event.target.value));
+                setGoldMedal(+event.target.value);
               }}></input></td>
               <td><input type='number' value={silverMedal} onChange={(event) => {
                 setSiverMedal(Number(event.target.value));
@@ -110,13 +146,12 @@ export const App = () => {
               <td><input type='number' value={cuMedal} onChange={(event) => {
                 setCuMedal(Number(event.target.value));
               }}></input></td>
-              <td><button className='addBtn' onClick={addNationHandler}>국가 추가</button></td>
-              <td><button className='updateBtn' onClick={updateNationHandler}>업데이트</button></td>
+              <td><Button className={'addBtn'} event={addNationHandler} comment={addComment} /></td>
+              <td><Button className={'updateBtn'} event={updateNationHandler} comment={updateComment} /></td>
             </tr>
           </tbody>
         </table>
         <br></br>
-        <span className='comment'>test =</span>
       </div>
 
       <div className='result'>
@@ -144,8 +179,20 @@ export const App = () => {
           </tbody>
         </table>
       </div>
+
+      {modal && (<Modal
+        ref={modalRef}
+        modalOption={toggleModal}
+        firstClassName={'overlay'}
+        secondClassNam={'modal-content'}
+        closeBtnClass={'close-modal'}
+        modalContent={'잘못된 접근 입니다.'}
+      />
+      )}
     </div >
   )
+
+
 }
 
 export default App;
