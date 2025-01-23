@@ -14,7 +14,8 @@ export const App = () => {
   const [addComment, setAddComment] = useState("국가 추가");
   const [updateComment, setUpdateComment] = useState("업데이트");
   const [modal, setModal] = useState(false);
-  
+  const [sortedList, setSortedList] = useState();
+
   if(goldMedal < 0){
     setGoldMedal(0);
   }else if(silverMedal < 0){
@@ -102,6 +103,8 @@ export const App = () => {
     }
       
     setNationList([...nationList, newNation]);
+    setSortedList(nationList.sort((a,b) => b.geum - a.geum));
+    console.log(sortedList);
     setNation("");
     setCuMedal(0);
     setGoldMedal(0);
@@ -164,7 +167,7 @@ export const App = () => {
               <th>동메달</th>
               <th>총 메달</th>
             </tr>
-            {nationList.map((nation) => {
+            {sortedList.map((nation) => {
               return <tr key={nation}>
                 <td>{nation.nation}</td>
                 <td>{nation.geum}</td>
